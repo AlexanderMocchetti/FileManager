@@ -55,7 +55,7 @@ public class FileManager {
             e.printStackTrace();
         }
     }
-    public void write(String firstName, String lastName, int YOB) throws IOException {
+    public void write(String firstName, String lastName, int YOB) {
         write(new User(firstName, lastName, YOB));
     }
 }
