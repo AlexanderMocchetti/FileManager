@@ -41,15 +41,21 @@ public class FileManager {
         try {
             RandomAccessFile raf = new RandomAccessFile(file, "rw");
             raf.seek(raf.length());
+
             StringBuilder string = new StringBuilder(User.DIM_MAX_NAME);
+
             string.append(user.getFirstName());
             string.setLength(string.capacity());
             raf.writeChars(string.toString());
+
             string.delete(0, string.capacity());
+
             string.append(user.getLastName());
             string.setLength(string.capacity());
             raf.writeChars(string.toString());
+
             raf.writeInt(user.getYOB());
+
             raf.close();
         } catch (IOException e) {
             e.printStackTrace();

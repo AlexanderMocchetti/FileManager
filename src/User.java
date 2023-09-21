@@ -46,7 +46,7 @@ public class User {
     }
     @Override
     public String toString() {
-        return "Nome: " + firstName + "\tCognome: " + lastName + "\tData di nascita: " + YOB;
+        return "Nome: " + firstName + "    Cognome: " + lastName + "    Data di nascita: " + YOB;
     }
 }
 
