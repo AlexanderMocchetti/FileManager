@@ -1,6 +1,8 @@
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FileManager {
     private final File file;
@@ -10,58 +12,79 @@ public class FileManager {
     public FileManager(String filePath) {
         this(new File(filePath));
     }
-    public void read(int index) {
+    public User read(int index) {
         try {
             RandomAccessFile raf = new RandomAccessFile(file, "r");
             raf.seek((long) User.DIM_RECORD * index);
             User user = new User();
-            char ch;
-            StringBuilder string = new StringBuilder(User.DIM_MAX_NAME);
-            for (int i = 0; i < 2 * User.DIM_MAX_NAME; i++) {
-                ch = raf.readChar();
-                if (ch != '\0')
-                    string.append(ch);
-                if (i == User.DIM_MAX_NAME - 1) {
-                    user.setFirstName(string.toString());
-                    string.delete(0, string.capacity());
-                }
-                if (i == 2 * User.DIM_MAX_NAME - 1) {
-                    user.setLastName(string.toString());
-                    string.delete(0, string.capacity());
-                }
-            }
+            user.setEmail(readString(User.DIM_MAX_MAIL, raf));
+            user.setFirstName(readString(User.DIM_MAX_NAME, raf));
+            user.setLastName(readString(User.DIM_MAX_NAME, raf));
             user.setYOB(raf.readInt());
             raf.close();
-            System.out.println(user);
+            return user;
         } catch (IOException e) {
             e.printStackTrace();
+            return null;
         }
     }
-    public void write(User user) {
+    public List<User> readAllRecords() {
+        int numberOfRecords = getNumberOfFileRecords();
+        if (numberOfRecords == -1)
+            return null;
+        ArrayList<User> records = new ArrayList<>(numberOfRecords);
+        for (int i = 0; i < numberOfRecords; i++) {
+            records.add(read(i));
+        }
+        return records;
+    }
+    private int getNumberOfFileRecords() {
+        try {
+            RandomAccessFile raf = new RandomAccessFile(file, "rw");
+            int numberOfRecords = (int) (raf.length() / User.DIM_RECORD);
+            raf.close();
+            return numberOfRecords;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return -1;
+        }
+    }
+    private String readString(int stringCapacity, RandomAccessFile raf) throws IOException {
+        StringBuilder string = new StringBuilder(stringCapacity);
+        char ch;
+        for (int i = 0; i < stringCapacity; i++) {
+            ch = raf.readChar();
+            if (ch != '\0')
+                string.append(ch);
+        }
+        return string.toString();
+    }
+    public boolean write(User user) {
         try {
             RandomAccessFile raf = new RandomAccessFile(file, "rw");
             raf.seek(raf.length());
 
-            StringBuilder string = new StringBuilder(User.DIM_MAX_NAME);
-
-            string.append(user.getFirstName());
-            string.setLength(string.capacity());
-            raf.writeChars(string.toString());
-
-            string.delete(0, string.capacity());
-
-            string.append(user.getLastName());
-            string.setLength(string.capacity());
-            raf.writeChars(string.toString());
+            writeString(user.getEmail(), User.DIM_MAX_MAIL, raf);
+            writeString(user.getFirstName(), User.DIM_MAX_NAME, raf);
+            writeString(user.getLastName(), User.DIM_MAX_NAME, raf);
 
             raf.writeInt(user.getYOB());
 
             raf.close();
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
     }
-    public void write(String firstName, String lastName, int YOB) {
-        write(new User(firstName, lastName, YOB));
+    private void writeString(String string, int stringCapacity, RandomAccessFile raf) throws IOException{
+        StringBuilder stringBuilder = new StringBuilder(stringCapacity);
+        stringBuilder.append(string);
+        stringBuilder.setLength(stringCapacity);
+        raf.writeChars(stringBuilder.toString());
+    }
+    public void write(String email, String firstName, String lastName, int YOB) {
+        write(new User(email, firstName, lastName, YOB));
     }
 }
