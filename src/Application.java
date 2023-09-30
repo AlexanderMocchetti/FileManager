@@ -28,14 +28,17 @@ public class Application {
         hashtable.put(user.getEmail(), hashtable.size());
         return true;
     }
-    public int getRecordPosition(String email) {
+    public Integer getRecordPosition(String email) {
         return hashtable.get(email);
     }
     public User readRecord(int position) {
         return fileManager.read(position);
     }
     public User readRecord(String email) {
-        return readRecord(getRecordPosition(email));
+        Integer pos = getRecordPosition(email);
+        if (pos == null)
+            return null;
+        return readRecord(pos);
     }
     public List<User> readAllRecords() {
         return fileManager.readAllRecords();
